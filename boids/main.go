@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"github.com/mrvea/goroutine/boids/env"
+
 	"github.com/mrvea/goroutine/boids/boid"
 
 	"github.com/hajimehoshi/ebiten"
@@ -13,7 +15,10 @@ var boids = map[int]*boid.Boid{}
 func update(screen *ebiten.Image) error {
 	if !ebiten.IsDrawingSkipped() {
 		for _, boid := range boids {
-			screen.Set(int(boid.position.x+1), int(boid.position.y+1), green)
+			screen.Set(boid.PositionXInt()+1, boid.PositionYInt(), env.Green)
+			screen.Set(boid.PositionXInt()-1, boid.PositionYInt(), env.Green)
+			screen.Set(boid.PositionXInt(), boid.PositionYInt()-1, env.Green)
+			screen.Set(boid.PositionXInt(), boid.PositionYInt()+1, env.Green)
 		}
 	}
 	return nil
@@ -25,7 +30,10 @@ func startBoid(bid int) {
 }
 
 func main() {
-	if err := ebiten.Run(update, screenWidth, screenHeight, 2, "Boids in a box"); err != nil {
+	for i := 0; i < env.BoidCount; i++ {
+		startBoid(i)
+	}
+	if err := ebiten.Run(update, env.ScreenWidth, env.ScreenHeight, 2, "Boids in a box"); err != nil {
 		log.Fatal(err)
 	}
 }

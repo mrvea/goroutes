@@ -6,12 +6,14 @@ import (
 	"github.com/mrvea/goroutine/boids/env"
 )
 
+//Boid struct node to represent a boid
 type Boid struct {
 	position Vector2d
 	velocity Vector2d
 	id       int
 }
 
+//NewBoid makes a new boid with random position and velocity
 func NewBoid(bid int) *Boid {
 	b := Boid{
 		position: NewRandVector(),
@@ -21,6 +23,7 @@ func NewBoid(bid int) *Boid {
 	return &b
 }
 
+//Start initilizes a boid in an infinite loop for a goroutine
 func (b *Boid) Start() {
 	for {
 		b.moveOne()
@@ -44,4 +47,14 @@ func (b *Boid) bounceOffX() {
 }
 func (b *Boid) bounceOffY() {
 	b.velocity.Y *= -1
+}
+
+//PositionXInt return position X as an int
+func (b *Boid) PositionXInt() int {
+	return int(b.position.X)
+}
+
+//PositionYInt return position Y as an int
+func (b *Boid) PositionYInt() int {
+	return int(b.position.Y)
 }
