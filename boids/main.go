@@ -10,11 +10,9 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
-var boids = map[int]*boid.Boid{}
-
 func update(screen *ebiten.Image) error {
 	if !ebiten.IsDrawingSkipped() {
-		for _, boid := range boids {
+		for _, boid := range boid.Boids {
 			screen.Set(boid.PositionXInt()+1, boid.PositionYInt(), env.Green)
 			screen.Set(boid.PositionXInt()-1, boid.PositionYInt(), env.Green)
 			screen.Set(boid.PositionXInt(), boid.PositionYInt()-1, env.Green)
@@ -25,11 +23,20 @@ func update(screen *ebiten.Image) error {
 }
 func startBoid(bid int) {
 	b := boid.NewBoid(bid)
-	boids[bid] = b
+	boid.Boids[bid] = b
+	env.BoidMap[b.PositionXInt()][b.PositionYInt()] = b.ID()
 	go b.Start()
+}
+func initBoidMap() {
+	for i, row := range env.BoidMap {
+		for j := range row {
+			env.BoidMap[i][j] = -1
+		}
+	}
 }
 
 func main() {
+	initBoidMap()
 	for i := 0; i < env.BoidCount; i++ {
 		startBoid(i)
 	}
