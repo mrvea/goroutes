@@ -15,9 +15,11 @@ type Boid struct {
 
 //NewBoid makes a new boid with random position and velocity
 func NewBoid(bid int) *Boid {
+	v := NewRandVector(2, 2)
+	v.X, v.Y = v.X-1.0, v.Y-1.0
 	b := Boid{
-		position: NewRandVector(),
-		velocity: NewRandVector(),
+		position: NewRandVector(env.ScreenWidth, env.ScreenHeight),
+		velocity: v,
 		id:       bid,
 	}
 	return &b

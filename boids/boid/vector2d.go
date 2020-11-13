@@ -3,8 +3,6 @@ package boid
 import (
 	"math"
 	"math/rand"
-
-	"github.com/mrvea/goroutine/boids/env"
 )
 
 //Vector2d a struct with coordinates X,Y
@@ -14,10 +12,10 @@ type Vector2d struct {
 }
 
 //NewRandVector makes a random 2d vector
-func NewRandVector() Vector2d {
+func NewRandVector(offsetX, offsetY int) Vector2d {
 	return Vector2d{
-		X: rand.Float64() * env.ScreenWidth,
-		Y: rand.Float64() * env.ScreenHeight,
+		X: rand.Float64() * float64(offsetX),
+		Y: rand.Float64() * float64(offsetY),
 	}
 }
 
