@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	Boids = map[int]*Boid{}
+	Boids [env.BoidCount]*Boid
 )
 
 //Boid struct node to represent a boid
@@ -51,8 +51,8 @@ func (b *Boid) calcAcceleration() Vector2d {
 	rightBound := int(math.Min(upper.X, env.ScreenWidth))
 	topBound := int(math.Min(upper.Y, env.ScreenHeight))
 	bottomBound := int(math.Max(lower.Y, 0))
-	for i := leftBound; i < rightBound; i++ {
-		for j := bottomBound; j < topBound; j++ {
+	for i := leftBound; i <= rightBound; i++ {
+		for j := bottomBound; j <= topBound; j++ {
 			if otherBoidID := env.BoidMap[i][j]; otherBoidID != -1 && otherBoidID != b.id {
 				if dist := Boids[otherBoidID].position.Distance(b.position); dist < env.ViewRadius {
 					count++
@@ -73,6 +73,7 @@ func (b *Boid) moveOne() {
 	b.velocity = b.velocity.Add(b.calcAcceleration()).limit(-1, 1)
 	env.BoidMap[b.PositionXInt()][b.PositionYInt()] = -1
 	b.position = b.position.Add(b.velocity)
+	env.BoidMap[b.PositionXInt()][b.PositionYInt()] = b.id
 	next := b.position.Add(b.velocity)
 	if next.X >= env.ScreenWidth || next.X < 0 {
 		b.bounceOffX()
@@ -83,10 +84,10 @@ func (b *Boid) moveOne() {
 }
 
 func (b *Boid) bounceOffX() {
-	b.velocity.X *= -1
+	b.velocity = Vector2d{X: -b.velocity.X, Y: b.velocity.Y}
 }
 func (b *Boid) bounceOffY() {
-	b.velocity.Y *= -1
+	b.velocity = Vector2d{X: b.velocity.X, Y: -b.velocity.Y}
 }
 
 //PositionXInt return position X as an int

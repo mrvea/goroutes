@@ -24,7 +24,7 @@ func update(screen *ebiten.Image) error {
 func startBoid(bid int) {
 	b := boid.NewBoid(bid)
 	boid.Boids[bid] = b
-	env.BoidMap[b.PositionXInt()][b.PositionYInt()] = b.ID()
+	env.BoidMap[b.PositionXInt()][b.PositionYInt()] = bid
 	go b.Start()
 }
 func initBoidMap() {
