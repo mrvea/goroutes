@@ -2,6 +2,7 @@ package env
 
 import (
 	"image/color"
+	"sync"
 )
 
 const (
@@ -12,7 +13,7 @@ const (
 )
 
 var (
-	Green = color.RGBA{R: 10, G: 255, B: 50, A: 255}
-
+	Green   = color.RGBA{R: 10, G: 255, B: 50, A: 255}
 	BoidMap [ScreenWidth + 1][ScreenHeight + 1]int
+	RWlock  = sync.RWMutex{}
 )

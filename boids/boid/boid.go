@@ -45,42 +45,66 @@ func (b *Boid) Start() {
 
 func (b *Boid) calcAcceleration() Vector2d {
 	upper, lower := b.position.AddF(env.ViewRadius), b.position.AddF(-env.ViewRadius)
-	avgVelocity := Vector2d{0, 0}
+	avgPosition, avgVelocity, separation := Vector2d{0, 0}, Vector2d{0, 0}, Vector2d{0, 0}
 	count := 0.0
 	leftBound := int(math.Max(lower.X, 0))
 	rightBound := int(math.Min(upper.X, env.ScreenWidth))
 	topBound := int(math.Min(upper.Y, env.ScreenHeight))
 	bottomBound := int(math.Max(lower.Y, 0))
+	env.RWlock.RLock()
 	for i := leftBound; i <= rightBound; i++ {
 		for j := bottomBound; j <= topBound; j++ {
 			if otherBoidID := env.BoidMap[i][j]; otherBoidID != -1 && otherBoidID != b.id {
 				if dist := Boids[otherBoidID].position.Distance(b.position); dist < env.ViewRadius {
 					count++
 					avgVelocity = avgVelocity.Add(Boids[otherBoidID].velocity)
+					avgPosition = avgPosition.Add(Boids[otherBoidID].position)
+					separation = separation.Add(b.position.Sub(Boids[otherBoidID].position).DivF(dist))
 				}
 			}
 		}
 	}
-	accel := Vector2d{0, 0}
+	env.RWlock.RUnlock()
+	accel := Vector2d{
+		X: b.borderBounce(b.position.X, env.ScreenWidth),
+		Y: b.borderBounce(b.position.Y, env.ScreenHeight),
+	}
 	if count > 0 {
-		avgVelocity = avgVelocity.DivF(count)
-		accel = avgVelocity.Sub(b.velocity).MulF(env.AdjRate)
+		avgPosition, avgVelocity = avgPosition.DivF(count), avgVelocity.DivF(count)
+		accelAlignment := avgVelocity.Sub(b.velocity).MulF(env.AdjRate)
+		accelCohision := avgPosition.Sub(b.position).MulF(env.AdjRate)
+		accelSeparation := separation.MulF(env.AdjRate)
+		accel = accel.Add(accelAlignment).Add(accelCohision).Add(accelSeparation)
 	}
 	return accel
 }
 
+func (b *Boid) borderBounce(pos, maxBound float64) float64 {
+	val := 0.0
+	if pos < env.ViewRadius {
+		val = 1 / pos
+	} else if pos > maxBound-env.ViewRadius {
+		val = 1 / (pos - maxBound)
+	}
+
+	return val
+}
+
 func (b *Boid) moveOne() {
-	b.velocity = b.velocity.Add(b.calcAcceleration()).limit(-1, 1)
+	accel := b.calcAcceleration()
+	env.RWlock.Lock()
+	b.velocity = b.velocity.Add(accel).limit(-1, 1)
 	env.BoidMap[b.PositionXInt()][b.PositionYInt()] = -1
 	b.position = b.position.Add(b.velocity)
 	env.BoidMap[b.PositionXInt()][b.PositionYInt()] = b.id
-	next := b.position.Add(b.velocity)
-	if next.X >= env.ScreenWidth || next.X < 0 {
-		b.bounceOffX()
-	}
-	if next.Y >= env.ScreenHeight || next.Y < 0 {
-		b.bounceOffY()
-	}
+	// next := b.position.Add(b.velocity)
+	// if next.X >= env.ScreenWidth || next.X < 0 {
+	// 	b.bounceOffX()
+	// }
+	// if next.Y >= env.ScreenHeight || next.Y < 0 {
+	// 	b.bounceOffY()
+	// }
+	env.RWlock.Unlock()
 }
 
 func (b *Boid) bounceOffX() {
